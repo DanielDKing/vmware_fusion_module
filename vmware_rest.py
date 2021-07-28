@@ -66,15 +66,48 @@ class VMwareFusion:
         if vms:
             vm_id = [i.id for i in vms if name in i.path]
         else:
-            pass
+            logging.error("Failed to find VM")
+            return None
 
         return vm_id[0]
 
-    def delete_vm(self):
-        pass
+    def delete_vm(self, name):
+        vm_id = self.name_to_id()
 
-    def vm_power_state(self, state):
-        pass
+        if vm_id:
+            try:
+                res = requests.delete(f"{self.__host}/vms/{vm_id}/power", headers={"Content-Type":
+                                      "application/vnd.vmware.vmw.rest-v1+json"},
+                                      auth=(self.__username, self.__password))
+                if res.status_code == 204:
+                    logging.info("VM DELETED:", name)
+                    return "OK"
+                else:
+                    logging.error("")
+                    return None
+            except Exception as e:
+                logging.error("Failed to delete vm.", name, e)
+                return None
+        else:
+            logging.error("Failed to achieve vm id.", name)
+            return None
+
+    def vm_power_state(self, name, state):
+        vm_id = self.name_to_id()
+
+        if vm_id:
+            try:
+                res = requests.put(f"{self.__host}/vms/{vm_id}/power", data=state, headers={"Content-Type":
+                                   "application/vnd.vmware.vmw.rest-v1+json"}, auth=(self.__username, self.__password))
+                power_state = json.loads(res.content)
+            except Exception as e:
+                logging.error("Failed to change vm power state.", name, e)
+                return None
+        else:
+            logging.error("Failed to achieve vm id.", name)
+            return None
+
+        return power_state
 
     # ?
     def export(self): # ?
