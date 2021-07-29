@@ -46,10 +46,10 @@ class VMwareFusion:
         self.__username = username
         self.__password = password
 
-    def create_vm(self):
+    def create_vm(self, name):
         pass
 
-    def get_ip(self):
+    def get_ip(self, name):
         pass
 
     def get_all_vms(self):
