@@ -5,6 +5,8 @@ from ansible.module_utils.basic import AnsibleModule
 import requests
 import logging
 import json
+import os
+import shutil
 
 __metaclass__ = type
 
@@ -71,16 +73,35 @@ class VMwareFusion:
 
         return vm_id[0]
 
+    def name_to_path(self, name):
+        vms = self.get_all_vms()
+
+        if vms:
+            vm_path = [i.path for i in vms if name in i.path]
+        else:
+            logging.error("Failed to find VM")
+            return None
+
+        return vm_path[0]
+
     def delete_vm(self, name):
-        vm_id = self.name_to_id()
+        vm_id = self.name_to_id(name)
 
         if vm_id:
             try:
+                vm_path = self.name_to_path(name)
                 res = requests.delete(f"{self.__host}/vms/{vm_id}/power", headers={"Content-Type":
                                       "application/vnd.vmware.vmw.rest-v1+json"},
                                       auth=(self.__username, self.__password))
                 if res.status_code == 204:
                     logging.info("VM DELETED:", name)
+                    vm_folder = os.path.join("/", *vm_path.split("/")[1:-1])
+                    try:
+                        shutil.rmtree(vm_folder)
+                    except Exception as e:
+                        logging.error("Error while deleting VM's directory", e)
+                        return None
+
                     return "OK"
                 else:
                     logging.error("")
