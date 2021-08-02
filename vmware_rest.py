@@ -7,6 +7,7 @@ import logging
 import json
 import os
 import shutil
+import time
 
 __metaclass__ = type
 
@@ -46,11 +47,40 @@ class VMwareFusion:
         self.__username = username
         self.__password = password
 
-    def create_vm(self, name):
-        pass
+    def create_vm(self, name, template):
+        logging.info(f"Creating VM {name}")
+        parent_id = self.name_to_id(template)
 
-    def get_ip(self, name):
-        pass
+        if parent_id:
+            try:
+                res = requests.post(f"{self.__host}/vms", data={"name": name, "parentId": parent_id},
+                                    headers={"Content-Type": "application/vnd.vmware.vmw.rest-v1+json"},
+                                    auth=(self.__username, self.__password))
+                if res.status_code == 201:
+                    return res.json()["id"]
+                else:
+                    raise Exception(res.text)
+            except Exception as e:
+                logging.error(f"Failed to create VM {name}.", e)
+        return None
+
+    def get_ip(self, name, vm_id=None):
+        if not vm_id:
+            vm_id = self.name_to_id(name=name)
+
+        if vm_id:
+            try:
+                for i in range(60):
+                    res = requests.get(f"{self.__host}/vms/{vm_id}", headers={"Content-Type":
+                                       "application/vnd.vmware.vmw.rest-v1+json"},
+                                       auth=(self.__username, self.__password))
+                    time.sleep(5)
+
+                return res.json()["ip"]
+            except Exception as e:
+                logging.error(f"Failed to retrieve ip from {name}.", res.text, e)
+
+        return None
 
     def get_all_vms(self):
         try:
@@ -84,13 +114,14 @@ class VMwareFusion:
 
         return vm_path[0]
 
-    def delete_vm(self, name):
-        vm_id = self.name_to_id(name)
+    def delete_vm(self, name, vm_id=None):
+        if not vm_id:
+            vm_id = self.name_to_id(name)
 
         if vm_id:
             try:
                 vm_path = self.name_to_path(name)
-                res = requests.delete(f"{self.__host}/vms/{vm_id}/power", headers={"Content-Type":
+                res = requests.delete(f"{self.__host}/vms/{vm_id}", headers={"Content-Type":
                                       "application/vnd.vmware.vmw.rest-v1+json"},
                                       auth=(self.__username, self.__password))
                 if res.status_code == 204:
@@ -113,8 +144,9 @@ class VMwareFusion:
             logging.error("Failed to achieve vm id.", name)
             return None
 
-    def vm_power_state(self, name, state):
-        vm_id = self.name_to_id()
+    def vm_power_state(self, name, state, vm_id=None):
+        if not vm_id:
+            vm_id = self.name_to_id()
 
         if vm_id:
             try:
@@ -134,6 +166,10 @@ class VMwareFusion:
     def export(self): # ?
         pass # ?
     # ?
+
+
+def manage_vmware_fusion():
+    pass
 
 
 def main():
