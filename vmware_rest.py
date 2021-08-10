@@ -233,7 +233,6 @@ def main():
             password=dict(required=True),
             template=dict(required=True),
             state=dict(choices=VALID_STATES, default="present", required=False),
-            export=dict(type=dict, default={"default": "None"}, required=False),
         )  # ,
         # add_file_common_args=True,
         # supports_check_mode=True
@@ -246,9 +245,8 @@ def main():
     password = params["password"]
     template = params["template"]
     state = params["state"]
-    export = params["export"]
 
-    result = manage_vmware_fusion(name, hostname, username, password, template, state, export)
+    result = manage_vmware_fusion(name, hostname, username, password, template, state)
 
     if result:
         module.exit_json(**result)
