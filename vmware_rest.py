@@ -156,7 +156,7 @@ class VMwareFusion:
 
     def vm_power_state(self, name, state, vm_id=None):
         if not vm_id:
-            vm_id = self.name_to_id()
+            vm_id = self.name_to_id(name)
 
         if vm_id:
             try:
