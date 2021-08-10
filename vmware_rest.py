@@ -38,24 +38,7 @@ EXAMPLES = r'''
     name: "{{ vm_name }}"
     template: "{{ template }}"
     state: "{{ state }}"
-    
-- name: "Create vm"
-  vmware_rest:
-    hostname: "{{ fusion_hostname }}"
-    username: "{{ fusion_username }}"
-    password: "{{ fusion_password }}"
-    name: "{{ vm_name }}"
-    template: "{{ template }}"
-    state: "{{ state }}"
-    export:
-      hostname: "{{ vcenter_hostname }}"
-      username: "{{ vcenter_username }}"
-      password: "{{ vcenter_password }}"
-      datacenter: "{{ vcenter_datacenter }}"
-      cluster: "{{ vcenter_cluster }}"
-      datastore: "{{ datastore }}"
-      network: "{{ network }}"
-      
+
 '''
 
 VALID_STATES = ["present", "absent", "poweredoff", "poweredon"]
